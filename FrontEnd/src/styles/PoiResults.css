@@ -1,0 +1,38 @@
+.poi-results {
+  flex-grow: 1;
+  overflow-y: auto;
+}
+
+.poi-results h3 {
+  margin-top: 0;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 10px;
+}
+
+.poi-results ul {
+  list-style-type: none;
+  padding: 0;
+}
+
+.poi-results li {
+  border-bottom: 1px solid #eee;
+  padding: 10px 0;
+}
+
+.poi-results li:last-child {
+  border-bottom: none;
+}
+
+.poi-results li h4 {
+  margin: 0 0 5px;
+}
+
+.poi-results li p {
+  margin: 0;
+  font-size: 0.9em;
+  color: #666;
+}
+
+.poi-results.error {
+  color: red;
+}
