@@ -239,26 +239,46 @@ function buildClausesForPart(rawPart, lat, lon, radius) {
 
 const complementaryTags = {
   restaurant: [
-    'node["office"]',
-    'node["amenity"="school"]',
-    'node["amenity"="college"]',
-    'node["shop"]'
+    '["office"]',
+    '["amenity"="school"]',
+    '["amenity"="college"]',
+    '["shop"]'
   ],
   clothing_store: [
-    'node["shop"="mall"]',
-    'node["amenity"="marketplace"]',
-    'node["highway"="bus_stop"]'
+    '["shop"="mall"]',
+    '["amenity"="marketplace"]',
+    '["highway"="bus_stop"]'
   ],
   gym: [
-    'node["landuse"="residential"]',
-    'node["leisure"="park"]',
-    'node["amenity"="school"]'
+    '["landuse"="residential"]',
+    '["leisure"="park"]',
+    '["amenity"="school"]'
+  ],
+  // new hospital entry
+  hospital: [
+    '["amenity"="pharmacy"]',
+    '["amenity"="clinic"]',
+    '["amenity"="parking"]',
+    '["highway"="bus_stop"]'
+  ],
+  // fallback generic set if nothing matches
+  _generic: [
+    '["shop"]',
+    '["amenity"]',
+    '["public_transport"="stop_position"]',
+    '["highway"="bus_stop"]'
   ]
 };
 
 // getComplementary: uses complementaryTags entries (tag-only) and queries node/way/relation for each
-async function getComplementary(lat, lon, radius, businessType, opts = {}) {
+async function getComplementary(lat, lon, radius, businessKey, opts = {}) {
+
+  const businessType = String(businessKey || '').trim().toLowerCase();
   const parts = complementaryTags[businessType];
+  if (!parts || parts.length === 0) {
+  if (opts.debug) console.warn('getComplementary: no complementaryTags for', businessKey);
+    return { count: 0, raw: null, query: null };
+    }
   if (!parts || parts.length === 0) return { count: 0, raw: null, query: null };
 
   const latN = Number(lat);

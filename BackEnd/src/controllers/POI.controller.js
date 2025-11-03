@@ -6,7 +6,21 @@ import { asyncHandler } from "../utils/AsyncHandler.js";
 
 
 
-const clamp = (v, a = 0, b = 1) => Math.max(a, Math.min(b, v));
+function clampVal(v, min = 0, max = 1) {
+  if (!Number.isFinite(v)) return min;
+  return Math.max(min, Math.min(max, v));
+}
+
+function safeNormalize(value, min, max) {
+  const v = Number(value);
+  const lo = Number(min);
+  const hi = Number(max);
+  if (!Number.isFinite(v)) return 0;
+  if (!Number.isFinite(lo) || !Number.isFinite(hi) || hi === lo) {
+    return v <= lo ? 0 : 1;
+  }
+  return clampVal((v - lo) / (hi - lo), 0, 1);
+}
 
 const calculate_score = asyncHandler(async(req,res)=>{
     const {lat,long,radius,category} = req.body;
@@ -16,7 +30,7 @@ const calculate_score = asyncHandler(async(req,res)=>{
     const plat = parseFloat(lat);
     const plong = parseFloat(long);
     const pradius = Number(radius);
-
+   
     if (Number.isNaN(plat) || Number.isNaN(plong) || Number.isNaN(pradius)) {
         throw new ApiError(400, "lat, long and radius must be numeric");
     }
@@ -32,8 +46,9 @@ const calculate_score = asyncHandler(async(req,res)=>{
     nearestNodalPointORS(plat, plong),
     getComplementary(plat, plong, pradius, category),
     ]);
+    const complementary_raw_debug = await getComplementary(plat, plong, pradius, category, { debug: true });
 
-    console.log("complementary_raw",complementary_raw)
+    console.log("complementary_raw",complementary_raw_debug)
 
     // Convert to numbers safely
     const pop_density = Number(pop_density_raw) || 0;
@@ -45,21 +60,32 @@ const calculate_score = asyncHandler(async(req,res)=>{
     console.log("competitors",competitors)
     console.log("distance",distance)
     console.log("complementary",complementary)
+    
+    const population_density_norm = safeNormalize(pop_density, min_pop_density, max_pop_density);
 
-    const population_density_norm = Math.min(1,(pop_density-min_pop_density)/(max_pop_density-min_pop_density));
-    const competition_density_norm = Math.min(1,(competitors-min_competitors)/(max_competitors - min_competitors));
-    const accessibility_score = clamp(0, Math.min(1, 1-(distance/max_distance)))
-    const complementary_business_score = Math.min(1,complementary/max_count_complementary)
+    // competition: normalize then invert so fewer competitors -> higher contribution
+    const competition_norm_raw = safeNormalize(competitors, min_competitors, max_competitors);
+    const competition_effect = clampVal(1 - competition_norm_raw, 0, 1); // higher => better
 
-    const score = (0.4 * population_density_norm)
-        - (0.3 * competition_density_norm)
-        + (0.2 * accessibility_score)
-        + (0.1 * complementary_business_score)
+    // accessibility: closer distance is better
+    const accessibility_score = clampVal(1 - (Number(distance) / (Number(max_distance) || 1)), 0, 1);
 
-    let result;
-    if(score>=upper_range) result = "Highly Suitable"
-    else if(score<upper_range && score>=lower_range) result = "Moderate"
-    else result = "Not Suitable"
+    // complementary businesses: normalized to [0,1]
+    const complementary_business_score = safeNormalize(complementary, 0, max_count_complementary);
+
+    const scoreRaw =
+  (0.4 * population_density_norm) +
+  (0.3 * competition_effect) +
+  (0.2 * accessibility_score) +
+  (0.1 * complementary_business_score);
+
+// clamp the final score to [0,1]
+const score = clampVal(scoreRaw, 0, 1);
+
+let result;
+if (score >= upper_range) result = "Highly Suitable";
+else if (score >= lower_range) result = "Moderate";
+else result = "Not Suitable";
     
     return res.status(200)
     .json(new ApiResponse(200,{result,score},"Score Calculated Successfully"))
