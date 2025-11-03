@@ -14,7 +14,7 @@ const userSchema = new mongoose.Schema(
                 default: 'Point'
             },
             coordinates: {
-                type: [Number], // [lon, lat]
+                type: [Number],
                 required: true,
                 validate: {
                     validator: function (v) {
@@ -35,7 +35,7 @@ const userSchema = new mongoose.Schema(
         place_rank: { 
             type: Number, 
             default: 0 
-        },  // use Number or mongoose.Types.Decimal128 if needed
+        }, 
         importance: { 
             type: Number, 
             default: 0 
@@ -46,4 +46,4 @@ userSchema.index({ location: '2dsphere' });
 userSchema.index({ category: 1 });
 userSchema.index({ type: 1 });
 
-export const User = mongoose.model("User",userSchema);
+export const UserData = mongoose.model("UserData",userSchema);
