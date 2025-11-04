@@ -1,4 +1,5 @@
-.map-container {
-  height: 100%;
-  width: 100%;
-}
+#map-root { height: 100vh; width: 100%; }
+
+/* smaller map controls tweaks */
+.leaflet-container { background: #fff; }
+.leaflet-control-attribution { font-size: 11px; }

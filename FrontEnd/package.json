@@ -11,11 +11,15 @@
   },
   "dependencies": {
     "@googlemaps/react-wrapper": "^1.2.0",
+    "@heroicons/react": "^2.2.0",
     "axios": "^1.12.2",
     "leaflet": "^1.9.4",
+    "leaflet-control-geocoder": "^3.3.1",
+    "lottie-web": "^5.13.0",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
     "react-leaflet": "^5.0.0",
+    "react-lottie-player": "^2.1.0",
     "react-router-dom": "^7.9.4"
   },
   "devDependencies": {

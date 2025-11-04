@@ -1,38 +1,79 @@
+
 .poi-results {
-  flex-grow: 1;
-  overflow-y: auto;
+  margin-top: 18px;
 }
 
 .poi-results h3 {
-  margin-top: 0;
-  border-bottom: 1px solid #eee;
-  padding-bottom: 10px;
+  margin: 0 0 10px 0;
+  font-size: 16px;
+  color: #0f172a;
 }
 
-.poi-results ul {
-  list-style-type: none;
-  padding: 0;
+.empty { color: #6b7280; padding: 12px 0; }
+
+.cards {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 
-.poi-results li {
-  border-bottom: 1px solid #eee;
-  padding: 10px 0;
+.poi-card {
+  border: 1px solid #e6e9ee;
+  border-radius: 8px;
+  padding: 10px;
+  background: #fff;
+  cursor: pointer;
+  transition: box-shadow 0.12s ease, transform 0.06s ease;
 }
 
-.poi-results li:last-child {
-  border-bottom: none;
+.poi-card:hover {
+  box-shadow: 0 8px 22px rgba(15,23,42,0.06);
+  transform: translateY(-2px);
 }
 
-.poi-results li h4 {
-  margin: 0 0 5px;
+.poi-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
 }
 
-.poi-results li p {
-  margin: 0;
-  font-size: 0.9em;
-  color: #666;
+.poi-title {
+  font-weight: 700;
+  color: #0f172a;
+  font-size: 14px;
 }
 
-.poi-results.error {
-  color: red;
+.poi-dist {
+  font-size: 12px;
+  color: #6b7280;
 }
+
+.poi-body {
+  margin-top: 6px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.poi-cat {
+  font-size: 13px;
+  color: #374151;
+}
+
+.poi-tags {
+  font-size: 12px;
+  color: #6b7280;
+}
+.poi-results { margin-top:12px; }
+.poi-results h3 { margin:0 0 8px 0; font-size:16px; color:#071033; }
+.cards { display:flex; flex-direction:column; gap:10px; }
+.poi-card { padding:10px; border-radius:10px; background:#fff; border:1px solid #eef2f7; box-shadow:0 6px 18px rgba(15,23,42,0.03); cursor:pointer; transition:transform .12s ease, box-shadow .12s ease; }
+.poi-card:hover, .poi-card:focus { transform:translateY(-4px); box-shadow:0 18px 40px rgba(15,23,42,0.06); outline:none; }
+.poi-head { display:flex; justify-content:space-between; align-items:center; }
+.poi-title { font-weight:700; font-size:14px; }
+.poi-dist { display:flex; gap:6px; align-items:center; color:#6b7280; font-size:13px; }
+.small-icon { width:14px; height:14px; color:#9ca3af; }
+.poi-body { display:flex; justify-content:space-between; margin-top:8px; align-items:center; }
+.poi-cat { display:flex; gap:6px; align-items:center; color:#374151; font-size:13px; }
+.poi-tags { color:#6b7280; font-size:12px; }
+.empty { color:#6b7280; padding:12px 0; }
