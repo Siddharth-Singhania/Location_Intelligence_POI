@@ -1,0 +1,92 @@
+/* global or src/styles/SearchPage.css - ensure full-height layout */
+html, body, #root {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  background: #f7fafc;
+}
+.search-header { display:flex; align-items:center; gap:12px; margin-bottom:14px; }
+.home-btn { display:inline-flex; align-items:center; gap:8px; padding:8px 10px; border-radius:8px; background:#fff; border:1px solid #e6eef6; cursor:pointer; font-weight:600; }
+.page-title { margin:0; font-size:18px; color:#071033; }
+
+/* two-column layout */
+.search-page {
+  display: flex;
+  height: 100vh; /* full viewport height */
+  width: 100%;
+  overflow: hidden; /* avoid page scroll producing white gaps */
+}
+
+/* left control panel */
+.left-panel {
+  width: 360px;
+  min-width: 300px;
+  max-width: 420px;
+  border-right: 1px solid #e6e9ee;
+  padding: 18px;
+  box-sizing: border-box;
+  overflow-y: auto;
+  background: #fff;
+}
+
+/* map area must never overflow and must allow child to shrink */
+.map-area {
+  flex: 1;
+  position: relative;
+  min-width: 0; /* IMPORTANT: prevents the map from expanding beyond available space */
+  display: flex;
+  flex-direction: column;
+  background: #e9eef6;
+}
+
+/* map root fills the .map-area fully */
+#map-root {
+  flex: 1 1 auto;
+  height: 100%;
+  width: 100%;
+  min-height: 300px;
+  min-width: 200px;
+  display: block;
+  background: #e6f0f8; /* background behind tiles to avoid white gaps */
+}
+
+/* Leaflet container tweaks to ensure it occupies all space */
+.leaflet-container {
+  height: 100% !important;
+  width: 100% !important;
+  background: #e6f0f8; /* same as #map-root */
+  position: relative;
+}
+
+/* Make sure controls do not push layout */
+.leaflet-top, .leaflet-bottom {
+  z-index: 1001;
+}
+
+/* optional: keep map controls visible and not overlapping left panel */
+.leaflet-control {
+  box-shadow: 0 1px 4px rgba(0,0,0,0.15);
+}
+
+/* prevent horizontal page scroll due to map or long content */
+body, .search-page, .map-area {
+  overflow-x: hidden;
+}
+
+/* When container resizes, ensure map remains full — helpful on small screens */
+@media (max-width: 900px) {
+  .left-panel {
+    width: 100%;
+    max-width: none;
+    min-width: 0;
+    border-right: none;
+    border-bottom: 1px solid #e6e9ee;
+  }
+  .search-page {
+    flex-direction: column;
+  }
+  #map-root {
+    height: 60vh; /* leave map visible on mobile */
+  }
+}
