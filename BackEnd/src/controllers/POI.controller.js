@@ -5,7 +5,7 @@ import { ApiResponse } from "../utils/ApiResponse.js";
 import { asyncHandler } from "../utils/AsyncHandler.js";
 
 
-
+//to clamp the value between 0 and 1
 function clampVal(v, min = 0, max = 1) {
   if (!Number.isFinite(v)) return min;
   return Math.max(min, Math.min(max, v));
@@ -36,15 +36,15 @@ const calculate_score = asyncHandler(async(req,res)=>{
     }
     const geotiffPath = "C:/Users/ar616f/Desktop/demo/POI/pointsofinterest_poc/BackEnd/public/ppp_2020.tif";
     const [
-    pop_density_raw,
-    competitors_raw,
-    distance_raw,
-    complementary_raw,
+      pop_density_raw,
+      competitors_raw,
+      distance_raw,
+      complementary_raw,
     ] = await Promise.all([
-    populationDensity(geotiffPath, plat, plong),
-    competitionDensity(plat, plong, pradius, category),
-    nearestNodalPointORS(plat, plong),
-    getComplementary(plat, plong, pradius, category),
+      populationDensity(geotiffPath, plat, plong),
+      competitionDensity(plat, plong, pradius, category),
+      nearestNodalPointORS(plat, plong),
+      getComplementary(plat, plong, pradius, category),
     ]);
     const complementary_raw_debug = await getComplementary(plat, plong, pradius, category, { debug: true });
 
@@ -74,10 +74,10 @@ const calculate_score = asyncHandler(async(req,res)=>{
     const complementary_business_score = safeNormalize(complementary, 0, max_count_complementary);
 
     const scoreRaw =
-  (0.4 * population_density_norm) +
-  (0.3 * competition_effect) +
-  (0.2 * accessibility_score) +
-  (0.1 * complementary_business_score);
+      (0.4 * population_density_norm) +
+      (0.3 * competition_effect) +
+      (0.1 * accessibility_score) +
+      (0.2 * complementary_business_score);
 
 // clamp the final score to [0,1]
 const score = clampVal(scoreRaw, 0, 1);
