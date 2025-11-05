@@ -25,7 +25,7 @@ function safeNormalize(value, min, max) {
 }
 
 const calculate_score = asyncHandler(async(req,res)=>{
-    const {address,lat,long,radius,category,type} = req.body;
+    const {address,lat,long,radius,category} = req.body;
     if (lat === undefined || long === undefined) {
     throw new ApiError(400, "lat and long are required in request body");
     }
@@ -94,7 +94,6 @@ const calculate_score = asyncHandler(async(req,res)=>{
       address,
       category,
       location,
-      type,
       score,
       result
     })

@@ -8,52 +8,209 @@ import * as GeoTIFF from 'geotiff';
 const fetchFn = (typeof fetch !== "undefined") ? fetch : (await import("node-fetch")).default;
 const complementaryTags = {
   restaurant: [
-    '["office"]',
-    '["amenity"="school"]',
-    '["amenity"="college"]',
+    '["amenity"="restaurant"]',
+    '["amenity"="fast_food"]',
+    '["amenity"="cafe"]',
+    '["amenity"="bar"]',
+    '["amenity"="pub"]',
+    '["shop"]'                       // any shop near restaurants is often complementary
+  ],
+
+  clothing_store: [
+    '["shop"="clothes"]',
+    '["shop"="mall"]',
+    '["shop"="shoes"]',
+    '["shop"="department_store"]',
     '["shop"]'
   ],
-  clothing_store: [
-    '["shop"="mall"]',
-    '["amenity"="marketplace"]',
-    '["highway"="bus_stop"]'
-  ],
+
   gym: [
-    '["landuse"="residential"]',
-    '["leisure"="park"]',
-    '["amenity"="school"]'
+    '["leisure"="fitness_centre"]',
+    '["amenity"="gym"]',
+    '["leisure"="swimming_pool"]',
+    '["sport"]'
   ],
-  // new hospital entry
+
   hospital: [
-    '["amenity"="pharmacy"]',
+    '["amenity"="hospital"]',
     '["amenity"="clinic"]',
+    '["amenity"="pharmacy"]',
+    '["emergency"]',
     '["amenity"="parking"]',
     '["highway"="bus_stop"]'
   ],
-  // fallback generic set if nothing matches
+
+  school: [
+    '["amenity"="school"]',
+    '["amenity"="college"]',
+    '["amenity"="kindergarten"]'
+  ],
+
+  supermarket: [
+    '["shop"="supermarket"]',
+    '["shop"="grocery"]',
+    '["shop"="convenience"]',
+    '["shop"]'
+  ],
+
+  cafe: [
+    '["amenity"="cafe"]',
+    '["amenity"="coffee_shop"]',
+    '["shop"="bakery"]'
+  ],
+
+  bar_pub: [
+    '["amenity"="bar"]',
+    '["amenity"="pub"]',
+    '["amenity"="nightclub"]'
+  ],
+
+  fuel: [
+    '["amenity"="fuel"]'
+  ],
+
+  parking: [
+    '["amenity"="parking"]',
+    '["amenity"="parking_entrance"]'
+  ],
+
+  bank_atm: [
+    '["amenity"="bank"]',
+    '["amenity"="atm"]'
+  ],
+
+  pharmacy: [
+    '["amenity"="pharmacy"]'
+  ],
+
+  public_transport: [
+    '["highway"="bus_stop"]',
+    '["public_transport"="platform"]',
+    '["railway"="station"]',
+    '["public_transport"]'
+  ],
+
+  leisure_park: [
+    '["leisure"="park"]',
+    '["leisure"="playground"]',
+    '["leisure"="garden"]'
+  ],
+
+  retail_general: [
+    '["shop"]',
+    '["shop"="mall"]',
+    '["shop"="department_store"]'
+  ],
+
+  entertainment: [
+    '["amenity"="theatre"]',
+    '["amenity"="cinema"]'
+  ],
+
+  hotel: [
+    '["tourism"="hotel"]',
+    '["tourism"="guest_house"]',
+    '["tourism"="hostel"]'
+  ],
+
   _generic: [
     '["shop"]',
     '["amenity"]',
-    '["public_transport"="stop_position"]',
-    '["highway"="bus_stop"]'
+    '["highway"="bus_stop"]',
+    '["public_transport"="platform"]'
   ]
 };
 
 function normalizeCategoryKey(raw) {
   const k = String(raw || '').trim().toLowerCase();
   const map = {
+    // restaurant variants
     'restaurant': 'restaurant',
     'restaurants': 'restaurant',
-    'amenity': 'restaurant',      // if callers pass "amenity" map to a sensible default
     'food': 'restaurant',
+    'food & beverage': 'restaurant',
+    'eatery': 'restaurant',
+    'catering': 'restaurant',
+
+    // clothing / retail
     'clothing': 'clothing_store',
-    'clothing_store': 'clothing_store',
-    'shop': 'clothing_store',
+    'clothing store': 'clothing_store',
+    'apparel': 'clothing_store',
+    'shop': 'retail_general',
+    'retail': 'retail_general',
+
+    // gym / fitness
     'gym': 'gym',
     'fitness': 'gym',
-    'hospital': 'hospital',       // if you added a hospital entry
-    'clinic': 'hospital'
-    // add entries you see in requests
+    'fitness centre': 'gym',
+    'fitness center': 'gym',
+
+    // hospital / clinic
+    'hospital': 'hospital',
+    'clinic': 'hospital',
+    'medical': 'hospital',
+    'healthcare': 'hospital',
+
+    // school / education
+    'school': 'school',
+    'college': 'school',
+    'education': 'school',
+    'university': 'school',
+
+    // supermarket / grocery
+    'supermarket': 'supermarket',
+    'grocery': 'supermarket',
+    'convenience': 'supermarket',
+
+    // cafe / coffee
+    'cafe': 'cafe',
+    'coffee': 'cafe',
+    'coffee shop': 'cafe',
+
+    // bar / pub
+    'bar': 'bar_pub',
+    'pub': 'bar_pub',
+    'nightlife': 'bar_pub',
+
+    // fuel / petrol
+    'fuel': 'fuel',
+    'petrol': 'fuel',
+    'gas': 'fuel',
+    'gas station': 'fuel',
+
+    // parking
+    'parking': 'parking',
+    'car park': 'parking',
+    'park and ride': 'parking',
+
+    // bank / atm
+    'bank': 'bank_atm',
+    'atm': 'bank_atm',
+
+    // pharmacy
+    'pharmacy': 'pharmacy',
+    'drugstore': 'pharmacy',
+
+    // public transport
+    'public transport': 'public_transport',
+    'bus': 'public_transport',
+    'train': 'public_transport',
+    'transit': 'public_transport',
+
+    // leisure / parks
+    'park': 'leisure_park',
+    'leisure': 'leisure_park',
+    'playground': 'leisure_park',
+
+    // entertainment
+    'cinema': 'entertainment',
+    'theatre': 'entertainment',
+    'entertainment': 'entertainment',
+
+    // hotel
+    'hotel': 'hotel',
+    'lodging': 'hotel',
+    'accommodation': 'hotel'
   };
   return map[k] || k; // return mapped key or the normalized key
 }
