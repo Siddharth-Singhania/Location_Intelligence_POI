@@ -1,5 +1,6 @@
 import { lower_range, max_competitors, max_count_complementary, max_distance, max_pop_density, min_competitors, min_pop_density, upper_range } from "../constant.js";
-import { competitionDensity, getComplementary, nearestNodalPointORS, populationDensity } from "../utils/Api.js";
+import { Training_Data } from "../models/training.models.js";
+import { competitionDensity, getComplementary, getLocationData, nearestNodalPointORS, populationDensity } from "../utils/Api.js";
 import { ApiError } from "../utils/ApiErrors.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { asyncHandler } from "../utils/AsyncHandler.js";
@@ -11,6 +12,7 @@ function clampVal(v, min = 0, max = 1) {
   return Math.max(min, Math.min(max, v));
 }
 
+//to normalize v between 0 and 1 if v is between min and max. If not clamp it
 function safeNormalize(value, min, max) {
   const v = Number(value);
   const lo = Number(min);
@@ -23,7 +25,7 @@ function safeNormalize(value, min, max) {
 }
 
 const calculate_score = asyncHandler(async(req,res)=>{
-    const {lat,long,radius,category} = req.body;
+    const {address,lat,long,radius,category,type} = req.body;
     if (lat === undefined || long === undefined) {
     throw new ApiError(400, "lat and long are required in request body");
     }
@@ -46,21 +48,20 @@ const calculate_score = asyncHandler(async(req,res)=>{
       nearestNodalPointORS(plat, plong),
       getComplementary(plat, plong, pradius, category),
     ]);
-    const complementary_raw_debug = await getComplementary(plat, plong, pradius, category, { debug: true });
 
-    console.log("complementary_raw",complementary_raw_debug)
+    
 
     // Convert to numbers safely
     const pop_density = Number(pop_density_raw) || 0;
     const competitors = competitors_raw.count;
     const distance = Number(distance_raw);
     const complementary = complementary_raw.count || 0;
-
+    
     console.log("pop_density",pop_density)
     console.log("competitors",competitors)
     console.log("distance",distance)
     console.log("complementary",complementary)
-    
+
     const population_density_norm = safeNormalize(pop_density, min_pop_density, max_pop_density);
 
     // competition: normalize then invert so fewer competitors -> higher contribution
@@ -79,14 +80,26 @@ const calculate_score = asyncHandler(async(req,res)=>{
       (0.1 * accessibility_score) +
       (0.2 * complementary_business_score);
 
-// clamp the final score to [0,1]
-const score = clampVal(scoreRaw, 0, 1);
+    // clamp the final score to [0,1]
+    const score = clampVal(scoreRaw, 0, 1);
 
-let result;
-if (score >= upper_range) result = "Highly Suitable";
-else if (score >= lower_range) result = "Moderate";
-else result = "Not Suitable";
+    let result;
+    if (score >= upper_range) result = "Highly Suitable";
+    else if (score >= lower_range) result = "Moderate";
+    else result = "Not Suitable";
     
+    const location = {type: 'Point', coordinates:[long,lat]};
+
+    const trainData = await Training_Data.create({
+      address,
+      category,
+      location,
+      type,
+      score,
+      result
+    })
+
+
     return res.status(200)
     .json(new ApiResponse(200,{result,score},"Score Calculated Successfully"))
 })

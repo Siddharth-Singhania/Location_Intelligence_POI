@@ -6,7 +6,57 @@ import { ApiError } from "./ApiErrors.js";
 import * as GeoTIFF from 'geotiff';
 
 const fetchFn = (typeof fetch !== "undefined") ? fetch : (await import("node-fetch")).default;
+const complementaryTags = {
+  restaurant: [
+    '["office"]',
+    '["amenity"="school"]',
+    '["amenity"="college"]',
+    '["shop"]'
+  ],
+  clothing_store: [
+    '["shop"="mall"]',
+    '["amenity"="marketplace"]',
+    '["highway"="bus_stop"]'
+  ],
+  gym: [
+    '["landuse"="residential"]',
+    '["leisure"="park"]',
+    '["amenity"="school"]'
+  ],
+  // new hospital entry
+  hospital: [
+    '["amenity"="pharmacy"]',
+    '["amenity"="clinic"]',
+    '["amenity"="parking"]',
+    '["highway"="bus_stop"]'
+  ],
+  // fallback generic set if nothing matches
+  _generic: [
+    '["shop"]',
+    '["amenity"]',
+    '["public_transport"="stop_position"]',
+    '["highway"="bus_stop"]'
+  ]
+};
 
+function normalizeCategoryKey(raw) {
+  const k = String(raw || '').trim().toLowerCase();
+  const map = {
+    'restaurant': 'restaurant',
+    'restaurants': 'restaurant',
+    'amenity': 'restaurant',      // if callers pass "amenity" map to a sensible default
+    'food': 'restaurant',
+    'clothing': 'clothing_store',
+    'clothing_store': 'clothing_store',
+    'shop': 'clothing_store',
+    'gym': 'gym',
+    'fitness': 'gym',
+    'hospital': 'hospital',       // if you added a hospital entry
+    'clinic': 'hospital'
+    // add entries you see in requests
+  };
+  return map[k] || k; // return mapped key or the normalized key
+}
 
 async function populationDensity(geotiffPath, lat, lon) {
    if (!geotiffPath) throw new ApiError(400, "geotiffPath required");
@@ -74,7 +124,6 @@ async function populationDensity(geotiffPath, lat, lon) {
     throw new ApiError(500, "populationDensity: No georeference info found in GeoTIFF");
   }
 }
-
 
 async function getLocationData(lat, long) {
   const url = `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${encodeURIComponent(lat)}&lon=${encodeURIComponent(long)}&zoom=18&addressdetails=1&extratags=1&namedetails=1`;
@@ -163,43 +212,6 @@ async function postOverpassWithRetries(query, url = 'https://overpass-api.de/api
   }
 }
 
-// competitionDensity: queries node+way+relation and returns a deduped count
-async function competitionDensity(lat, lon, radius, category, opts = {}) {
-  // validate inputs to avoid NaN in query
-  const latN = toNumberOrThrow(lat, 'lat');
-  const lonN = toNumberOrThrow(lon, 'lon');
-  const radiusN = toNumberOrThrow(radius, 'radius');
-  const timeoutSec = opts.timeoutSec ?? 60;
-  const overpassUrl = opts.url ?? 'https://overpass-api.de/api/interpreter';
-
-  const query = `
-    [out:json][timeout:${timeoutSec}];
-    (
-      node["amenity"="${category}"](around:${radiusN},${latN},${lonN});
-      way["amenity"="${category}"](around:${radiusN},${latN},${lonN});
-      relation["amenity"="${category}"](around:${radiusN},${latN},${lonN});
-    );
-    out center;
-  `;
-
-  const data = await postOverpassWithRetries(query, overpassUrl, opts);
-  const elements = Array.isArray(data.elements) ? data.elements : [];
-
-  // dedupe by type+id
-  const seen = new Set();
-  let uniqueCount = 0;
-  for (const e of elements) {
-    if (!e || e.id == null || !e.type) continue;
-    const key = `${e.type}:${e.id}`;
-    if (!seen.has(key)) {
-      seen.add(key);
-      uniqueCount++;
-    }
-  }
-
-  return { count: uniqueCount, raw: data };
-}
-
 function buildClausesForPart(rawPart, lat, lon, radius) {
   const p = String(rawPart).trim();
   if (!p) return '';
@@ -237,50 +249,57 @@ function buildClausesForPart(rawPart, lat, lon, radius) {
   }
 }
 
-const complementaryTags = {
-  restaurant: [
-    '["office"]',
-    '["amenity"="school"]',
-    '["amenity"="college"]',
-    '["shop"]'
-  ],
-  clothing_store: [
-    '["shop"="mall"]',
-    '["amenity"="marketplace"]',
-    '["highway"="bus_stop"]'
-  ],
-  gym: [
-    '["landuse"="residential"]',
-    '["leisure"="park"]',
-    '["amenity"="school"]'
-  ],
-  // new hospital entry
-  hospital: [
-    '["amenity"="pharmacy"]',
-    '["amenity"="clinic"]',
-    '["amenity"="parking"]',
-    '["highway"="bus_stop"]'
-  ],
-  // fallback generic set if nothing matches
-  _generic: [
-    '["shop"]',
-    '["amenity"]',
-    '["public_transport"="stop_position"]',
-    '["highway"="bus_stop"]'
-  ]
-};
+// competitionDensity: queries node+way+relation and returns a deduped count
+async function competitionDensity(lat, lon, radius, category, opts = {}) {
+  // validate inputs to avoid NaN in query
+  const latN = toNumberOrThrow(lat, 'lat');
+  const lonN = toNumberOrThrow(lon, 'lon');
+  const radiusN = toNumberOrThrow(radius, 'radius');
+  const timeoutSec = opts.timeoutSec ?? 60;
+  const overpassUrl = opts.url ?? 'https://overpass-api.de/api/interpreter';
+
+  const query = `
+    [out:json][timeout:${timeoutSec}];
+    (
+      node["amenity"="${category}"](around:${radiusN},${latN},${lonN});
+      way["amenity"="${category}"](around:${radiusN},${latN},${lonN});
+      relation["amenity"="${category}"](around:${radiusN},${latN},${lonN});
+    );
+    out center;
+  `;
+
+  const data = await postOverpassWithRetries(query, overpassUrl, opts);
+  const elements = Array.isArray(data.elements) ? data.elements : [];
+
+  // dedupe by type+id
+  const seen = new Set();
+  let uniqueCount = 0;
+  for (const e of elements) {
+    if (!e || e.id == null || !e.type) continue;
+    const key = `${e.type}:${e.id}`;
+    if (!seen.has(key)) {
+      seen.add(key);
+      uniqueCount++;
+    }
+  }
+
+  return { count: uniqueCount, raw: data };
+}
 
 // getComplementary: uses complementaryTags entries (tag-only) and queries node/way/relation for each
 async function getComplementary(lat, lon, radius, businessKey, opts = {}) {
-
-  const businessType = String(businessKey || '').trim().toLowerCase();
+  const businessType = normalizeCategoryKey(String(businessKey || '').trim().toLowerCase());
+  
   const parts = complementaryTags[businessType];
+
+  console.log("businessKey: ",businessType)
+  console.log("parts: ",parts)
+
   if (!parts || parts.length === 0) {
   if (opts.debug) console.warn('getComplementary: no complementaryTags for', businessKey);
     return { count: 0, raw: null, query: null };
     }
   if (!parts || parts.length === 0) return { count: 0, raw: null, query: null };
-
   const latN = Number(lat);
   const lonN = Number(lon);
   const radiusN = Number(radius);

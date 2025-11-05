@@ -17,9 +17,7 @@ const getUserData = asyncHandler(async(req,res)=>{
     if (lat < -90 || lat > 90 || long < -180 || long > 180) {
         throw new ApiError(400,"latitude or longitude out of range!");
     }
-    const location = {type: 'point', coordinates:[lat,long]};
-
-    //hit api and get other data that needs to be stored;
+    const location = {type: 'Point', coordinates:[long,lat]};
     const locationData = await getLocationData(lat,long);
 
 
@@ -27,6 +25,7 @@ const getUserData = asyncHandler(async(req,res)=>{
         address,
         category,
         location,
+        type: locationData.type,
         place_rank: locationData.place_rank,
         importance: locationData.importance
     })
