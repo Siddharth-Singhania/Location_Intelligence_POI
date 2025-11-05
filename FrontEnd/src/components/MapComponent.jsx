@@ -59,6 +59,8 @@ export default function MapComponent({ onResults = () => {}, onReady = () => {} 
           category: String(category || "any"),
         }),
       });
+
+      
       if (!res.ok) {
         const text = await res.text().catch(() => null);
         throw new Error(`Backend ${res.status} ${res.statusText} ${text || ""}`);
@@ -89,6 +91,7 @@ export default function MapComponent({ onResults = () => {}, onReady = () => {} 
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(body),
       });
+      console.log(res)
       if (!res.ok) {
         const text = await res.text().catch(() => "");
         throw new Error(`Score API ${res.status} ${res.statusText} ${text || ""}`);
