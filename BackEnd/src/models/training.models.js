@@ -1,44 +1,39 @@
 import mongoose from "mongoose"
+import { GeoSchema } from "./user.models.js";
 
 const trainingSchema = new mongoose.Schema(
     {
         address: { 
             type: String,
-            required: true 
+            required: true ,
+            lowercase: true
         },
         location: {
-            type: {
-                type: String,
-                enum: ['Point'],
-                required: true,
-                default: 'Point'
-            },
-            coordinates: {
-                type: [Number], // [lon, lat]
-                required: true,
-                validate: {
-                    validator: function (v) {
-                    return v.length === 2;
-                },
-                message: props => `${props.path} must be [lon, lat]`
-                }
-            }
+            type: GeoSchema,
+            required: true
         },
         category: { 
             type: String, 
-            required: true 
+            required: true,
+            lowercase: true
         }, 
-        POI: { 
+        score: { 
             type: Number, 
             default: 0 
         },
+        result:{
+            type: String,
+            required: true,
+            lowercase: true
+        },
         type: { 
             type: String, 
-            required: true 
-        }
+            required: true ,
+            lowercase: true
+        },
     }, { timestamps: true });
 
 trainingSchema.index({ category: 1 });
 trainingSchema.index({ type: 1 });
 
-export const Training = mongoose.model("Training",trainingSchema)
+export const Training_Data = mongoose.model("Training_Data",trainingSchema)
