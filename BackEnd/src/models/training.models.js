@@ -25,12 +25,7 @@ const trainingSchema = new mongoose.Schema(
             type: String,
             required: true,
             lowercase: true
-        },
-        type: { 
-            type: String, 
-            required: true ,
-            lowercase: true
-        },
+        }
     }, { timestamps: true });
 
 trainingSchema.index({ category: 1 });

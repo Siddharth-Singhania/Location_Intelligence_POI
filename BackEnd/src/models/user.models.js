@@ -36,11 +36,6 @@ const userSchema = new mongoose.Schema(
             required: true ,
             lowercase: true
         },
-        type: { 
-            type: String,
-            required: true,
-            lowercase: true
-        },
         place_rank: { 
             type: Number, 
             default: 0 

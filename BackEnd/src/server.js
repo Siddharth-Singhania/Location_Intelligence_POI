@@ -8,19 +8,19 @@ dotenv.config({
 })
 
 
-const port = process.env.PORT || 8000;
-app.listen(port, () => {
-  console.log(`Server (no DB) is running at port: ${port}`);
-});
-// connectDB()
-// .then(()=>{
-//     app.listen(process.env.PORT || 8000, ()=>{
-//         console.log(`Server is running at port: ${process.env.PORT}`)
-//     })
-// })
-// .catch((err)=>{
-//     console.log("MongoDB connection failed!!! ",err)
-// })
+// const port = process.env.PORT || 8000;
+// app.listen(port, () => {
+//   console.log(`Server (no DB) is running at port: ${port}`);
+// });
+connectDB()
+.then(()=>{
+    app.listen(process.env.PORT || 8000, ()=>{
+        console.log(`Server is running at port: ${process.env.PORT}`)
+    })
+})
+.catch((err)=>{
+    console.log("MongoDB connection failed!!! ",err)
+})
 
 
 

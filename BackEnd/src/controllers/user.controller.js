@@ -25,7 +25,6 @@ const getUserData = asyncHandler(async(req,res)=>{
         address,
         category,
         location,
-        type: locationData.type,
         place_rank: locationData.place_rank,
         importance: locationData.importance
     })
