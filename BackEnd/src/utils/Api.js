@@ -137,11 +137,25 @@ async function getLocationData(lat, long) {
   }
 }
 
-async function nearestNodalPointORS(lat, long) {
+async function nearestNodalPointORS(lat, lon, opts = {}) {
   const url = 'https://api.openrouteservice.org/v2/snap/driving-car';
   const ORS_API = process.env.ORS_API || "";
-  if (!ORS_API) return 1200;
-  const body = { geometry: [[long, lat]] };
+  const debug = !!opts.debug;
+  const fallback = Number.isFinite(opts.fallback) ? opts.fallback : 1000;
+  
+  if (!ORS_API) {
+    if (debug) console.warn('nearestNodalPointORS: no ORS API key, returning fallback', fallback);
+    return fallback;
+  }
+
+  const latN = Number(lat);
+  const lonN = Number(lon);
+  if (!Number.isFinite(latN) || !Number.isFinite(lonN)) {
+    throw new Error('lat and lon must be finite numbers');
+  }
+  
+  const body = { locations: [[lonN, latN]] }; 
+
   try {
     const res = await fetchFn(url, {
       method: 'POST',
@@ -149,18 +163,37 @@ async function nearestNodalPointORS(lat, long) {
         'Authorization': ORS_API,
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify(body)
+      body: JSON.stringify(body),
     });
+  
     if (!res.ok) {
-      throw new ApiError(404, `ORS error ${res.status}: ${await res.text()}`);
+      if (debug) console.warn('nearestNodalPointORS: non-ok response', res.status);
+      return fallback;
     }
-    const data = await res.json();
-    if (data && data.features && data.features[0] && data.features[0].properties) {
-      return data.features[0].properties?.distance ?? data.features[0].properties?.location_distance ?? 1200;
+    const text = await res.text();
+    let data;
+    try { data = JSON.parse(text); } catch (err) {
+      if (debug) console.error('nearestNodalPointORS: invalid JSON', err);
+      return fallback;
     }
-    return 1200;
+
+    const locEntry = Array.isArray(data.locations) ? data.locations[0] : null;
+    const snappedDistance = locEntry?.snapped_distance ?? locEntry?.location_distance ?? null;
+
+
+    const distance = Number(snappedDistance)
+
+    if (Number.isFinite(distance)) {
+      if (debug) console.log('nearestNodalPointORS: distance (m)=', distance);
+      return distance;
+    }
+
+    if (debug) console.warn('nearestNodalPointORS: distance not found, returning fallback');
+    return fallback;
+
   } catch (err) {
-    return 1200;
+    if (debug) console.error('nearestNodalPointORS: fetch error', err);
+    return fallback;
   }
 }
 
