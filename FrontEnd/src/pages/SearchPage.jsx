@@ -3,7 +3,7 @@ import React, { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import MapComponent from '../components/MapComponent';
 import SearchForm from '../components/SearchForm';
-import PoiResults from '../components/PoiResults';
+// import PoiResults from '../components/PoiResults';
 import '../styles/SearchPage.css';
 
 export default function SearchPage() {
