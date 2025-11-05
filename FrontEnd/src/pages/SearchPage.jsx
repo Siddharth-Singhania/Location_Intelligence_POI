@@ -60,7 +60,7 @@ export default function SearchPage() {
         {/* Search form */}
         <SearchForm setLoading={setLoading} setError={setError} />
 
-        {/* Optional: show saved user doc (if present) */}
+        {/* Optional: show saved user doc (if present)
         {aggResults?.userDoc && (
           <div className="user-saved-card">
             <div className="user-saved-title">{aggResults.userDoc.address ?? 'Saved location'}</div>
@@ -68,10 +68,10 @@ export default function SearchPage() {
               Type: {aggResults.userDoc.type ?? aggResults.userDoc.category ?? '—'} • Importance: {aggResults.userDoc.importance ?? '—'}
             </div>
           </div>
-        )}
+        )} */}
 
         {/* Results list */}
-        <div className="results-wrapper">
+        {/* <div className="results-wrapper">
           <PoiResults
             results={aggResults?.top_pois ?? []}
             loading={loading}
@@ -79,7 +79,7 @@ export default function SearchPage() {
             onPoiClick={handlePoiClick}
             userDoc={aggResults?.userDoc}
           />
-        </div>
+        </div> */}
       </aside>
 
       <main className="map-area">
