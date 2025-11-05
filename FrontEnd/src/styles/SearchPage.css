@@ -20,7 +20,17 @@ html, body, #root {
 
 /* left control panel */
 .left-panel {
-  width: 360px;
+  width: 360px;/* add to frontend/src/styles/SearchPage.css */
+.score-card {
+  margin-bottom: 12px;
+  padding: 12px;
+  border-radius: 8px;
+  background: #fff9ef;
+  border: 1px solid #ffe6b3;
+  color: #663c00;
+  font-size: 13px;
+}
+.score-card strong { font-weight: 800; }
   min-width: 300px;
   max-width: 420px;
   border-right: 1px solid #e6e9ee;
@@ -90,3 +100,42 @@ body, .search-page, .map-area {
     height: 60vh; /* leave map visible on mobile */
   }
 }
+
+
+/* SearchPage.css additions for score & saved card */
+.score-card {
+  margin-bottom: 12px;
+  padding: 12px;
+  border-radius: 8px;
+  background: #fff;
+  border: 1px solid #eef2f7;
+  box-shadow: 0 6px 18px rgba(15,23,42,0.03);
+  font-size: 13px;
+}
+.score-row {
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
+.score-label { font-weight:700; color:#0f172a; }
+.score-badge {
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-weight:700;
+  font-size:12px;
+}
+.score-badge.bad { background:#fff4f2; color:#9b2c00; border:1px solid #ffd6cc; }
+.score-badge.good { background:#f6ffef; color:#0b6a1b; border:1px solid #d1f5d6; }
+.score-value { margin-top:8px; color:#374151; }
+.score-hint { margin-top:8px; font-size:12px; color:#6b7280; }
+
+.user-saved-card {
+  margin: 10px 0;
+  padding: 10px;
+  border-radius: 8px;
+  background: #f6f9ff;
+  border: 1px solid #e6eefb;
+  font-size: 13px;
+}
+.user-saved-title { font-weight:700; color:#0f172a; }
+.user-saved-meta { color:#374151; margin-top:6px; font-size:13px; }
