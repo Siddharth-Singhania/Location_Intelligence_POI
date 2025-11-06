@@ -60,6 +60,7 @@ export default function SearchForm({ setLoading, setError }) {
       category,
       radius: Number(radius),
     };
+    console.log('[SearchForm] dispatchSelect ->', enriched);
     // debug: console.log('Dispatch poi-autoselect:', enriched);
     window.dispatchEvent(new CustomEvent('poi-autoselect', { detail: enriched }));
   };
