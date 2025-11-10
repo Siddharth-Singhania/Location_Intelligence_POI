@@ -4,7 +4,11 @@ import { competitionDensity, getComplementary, getLocationData, nearestNodalPoin
 import { ApiError } from "../utils/ApiErrors.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { asyncHandler } from "../utils/AsyncHandler.js";
+import path from 'path';
+import { fileURLToPath } from 'url';
 
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 //to clamp the value between 0 and 1
 function clampVal(v, min = 0, max = 1) {
@@ -36,7 +40,7 @@ const calculate_score = asyncHandler(async(req,res)=>{
     if (Number.isNaN(plat) || Number.isNaN(plong) || Number.isNaN(pradius)) {
         throw new ApiError(400, "lat, long and radius must be numeric");
     }
-    const geotiffPath = "C:/Users/ar616f/Desktop/demo/POI/pointsofinterest_poc/BackEnd/public/ppp_2020.tif";
+    const geotiffPath = path.join(__dirname, '..', '..', 'public', 'ppp_2020.tif');
     const [
       pop_density_raw,
       competitors_raw,
