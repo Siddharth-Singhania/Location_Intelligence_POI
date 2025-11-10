@@ -8,8 +8,8 @@
     "node": "20.x"
   },
   "scripts": {
-    "dev": "nodemon -r dotenv/config --experimental-json-modules src/server.js",
-    "start": "node -r dotenv/config --experimental-json-modules src/server.js"
+    "dev": "nodemon --experimental-json-modules src/server.js",
+    "start": "node --experimental-json-modules src/server.js"
   },
   "author": "Sandeep And Siddharth",
   "license": "ISC",
