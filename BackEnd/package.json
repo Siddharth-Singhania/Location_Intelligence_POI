@@ -5,11 +5,11 @@
   "main": "server.js",
   "type": "module",
   "engines": {
-    "node": "20.x"
+    "node": ">=20"
   },
   "scripts": {
     "dev": "nodemon -r dotenv/config --experimental-json-modules src/server.js",
-    "start": "node -r dotenv/config --experimental-json-modules src/server.js"
+    "start": "node --experimental-json-modules src/server.js"
   },
   "author": "Sandeep And Siddharth",
   "license": "ISC",
